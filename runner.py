@@ -39,17 +39,14 @@ class AICodeDigestRunner:
         self.config = self.load_config()
         self.setup_logging()
         
-        # Initialize components
-        self.arxiv_fetcher = ArxivFetcher()
+        # Initialize components with config
+        self.arxiv_fetcher = ArxivFetcher(config=self.config)
         self.github_fetcher = GitHubFetcher(
+            config=self.config,
             token=os.getenv('GITHUB_TOKEN')
         )
         self.data_cleaner = DataCleaner()
-        self.summarizer = GPTSummarizer(
-            api_key=os.getenv(self.config["llm"]["api_key_env"]),
-            model=self.config["llm"]["model"],
-            base_url=self.config["llm"].get("base_url")
-        )
+        self.summarizer = GPTSummarizer(config=self.config)
         self.report_generator = ReportGenerator(
             output_dir=self.config["output"]["output_dir"]
         )

@@ -7,15 +7,15 @@ from pathlib import Path
 
 
 class ArxivFetcher:
-    def __init__(self, keywords_file: str = "collector/keywords.json"):
-        self.keywords_file = Path(keywords_file)
-        self.load_keywords()
-    
-    def load_keywords(self):
-        with open(self.keywords_file, 'r', encoding='utf-8') as f:
-            config = json.load(f)
-            self.keywords = config["keywords"]
-            self.categories = config["arxiv_categories"]
+    def __init__(self, config: dict = None):
+        if config is None:
+            # Load from default config file
+            config_path = Path("config.json")
+            with open(config_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+        
+        self.keywords = config["data_collection"]["keywords"]
+        self.categories = config["data_collection"]["arxiv"]["categories"]
     
     def build_query(self, days_back: int = 30) -> str:
         keyword_queries = []
@@ -69,6 +69,7 @@ class ArxivFetcher:
 
 
 if __name__ == "__main__":
+    # Test with default config
     fetcher = ArxivFetcher()
     papers = fetcher.fetch_papers(max_results=50)
     print(f"Found {len(papers)} papers")

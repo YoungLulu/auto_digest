@@ -8,21 +8,53 @@ from .scoring_system import ComprehensiveScorer
 
 
 class GPTSummarizer:
-    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-3.5-turbo", base_url: Optional[str] = None):
-        if api_key:
-            # Use OpenRouter if base_url is provided, otherwise use OpenAI
-            if base_url:
-                self.client = openai.OpenAI(
-                    api_key=api_key,
-                    base_url=base_url
-                )
-            else:
-                self.client = openai.OpenAI(api_key=api_key)
-        else:
-            self.client = None
+    def __init__(self, config: dict = None, api_key: Optional[str] = None, model: str = None, base_url: Optional[str] = None):
+        # Load configuration
+        if config is None:
+            config_path = Path("config.json")
+            with open(config_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+        
+        self.config = config["llm"]
+        
+        # Use provided parameters or fall back to config
+        provider = self.config.get("provider", "openrouter")
+        model = model or self.config.get("model", "gpt-3.5-turbo")
+        
+        # Initialize client based on provider
+        self.client = self._initialize_client(provider, api_key, base_url)
         self.model = model
         self.prompt_template = self.load_prompt_template()
         self.scorer = ComprehensiveScorer()
+    
+    def _initialize_client(self, provider: str, api_key: Optional[str] = None, base_url: Optional[str] = None):
+        """Initialize the appropriate LLM client based on provider"""
+        import os
+        
+        providers_config = self.config.get("providers", {})
+        
+        if provider in providers_config:
+            provider_config = providers_config[provider]
+            api_key = api_key or os.getenv(provider_config["api_key_env"])
+            base_url = base_url or provider_config["base_url"]
+        else:
+            # Fallback to legacy config
+            api_key = api_key or os.getenv(self.config.get("api_key_env", "OPENAI_API_KEY"))
+            base_url = base_url or self.config.get("base_url")
+        
+        if not api_key:
+            print(f"Warning: No API key found for provider '{provider}'. LLM features will be disabled.")
+            return None
+        
+        try:
+            client = openai.OpenAI(
+                api_key=api_key,
+                base_url=base_url
+            )
+            return client
+        except Exception as e:
+            print(f"Error initializing LLM client for provider '{provider}': {e}")
+            return None
     
     def load_prompt_template(self) -> str:
         template_path = Path("summarizer/prompt_templates/classify_summarize.txt")

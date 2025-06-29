@@ -8,8 +8,13 @@ import time
 
 
 class GitHubFetcher:
-    def __init__(self, keywords_file: str = "collector/keywords.json", token: Optional[str] = None):
-        self.keywords_file = Path(keywords_file)
+    def __init__(self, config: dict = None, token: Optional[str] = None):
+        if config is None:
+            # Load from default config file
+            config_path = Path("config.json")
+            with open(config_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+        
         self.token = token
         self.headers = {
             "Accept": "application/vnd.github.v3+json",
@@ -18,13 +23,8 @@ class GitHubFetcher:
         if token:
             self.headers["Authorization"] = f"token {token}"
         
-        self.load_keywords()
-    
-    def load_keywords(self):
-        with open(self.keywords_file, 'r', encoding='utf-8') as f:
-            config = json.load(f)
-            self.keywords = config["keywords"]
-            self.github_topics = config.get("github_topics", [])
+        self.keywords = config["data_collection"]["keywords"]
+        self.github_topics = config["data_collection"]["github"]["topics"]
     
     def build_search_queries(self, days_back: int = 7) -> List[str]:
         cutoff_date = (datetime.now() - timedelta(days=days_back)).strftime("%Y-%m-%d")

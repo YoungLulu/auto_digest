@@ -24,8 +24,10 @@ sudo apt-get install pandoc texlive-xelatex
 Create a `.env` file or set the following environment variables:
 
 ```bash
-# OpenRouter API (required for LLM summaries)
-export OPENROUTER_API_KEY="your-openrouter-api-key"
+# LLM API Keys (choose your provider)
+export DEEPSEEK_API_KEY="your-deepseek-api-key"
+export OPENROUTER_API_KEY="your-openrouter-api-key" 
+export OPENAI_API_KEY="your-openai-api-key"
 
 # GitHub API (optional, for higher rate limits)
 export GITHUB_TOKEN="your-github-token"
@@ -41,9 +43,23 @@ export SMTP_USE_TLS="true"
 #### Configuration File
 
 Edit `config.json` to customize:
-- Data collection parameters (days back, max results)
-- LLM settings (model, temperature)
-- Output formats and email settings
+
+**🔍 Search Configuration:**
+- **Keywords**: Custom search terms for research topics
+- **arXiv Categories**: Target academic categories (cs.AI, cs.SE, etc.)
+- **GitHub Topics**: Repository topics to search
+- **Collection Parameters**: Days back, max results, minimum stars
+
+**🤖 LLM Provider Configuration:**
+- **Multiple Providers**: DeepSeek, OpenRouter, OpenAI support
+- **Provider-specific Settings**: Custom API endpoints and models
+- **Flexible Model Selection**: Choose optimal model for your use case
+
+**📊 Output & Email Settings:**
+- **Multiple Formats**: JSON, Markdown, HTML, PDF
+- **Email Configuration**: SMTP settings and recipients
+
+See `config.examples.md` for detailed configuration examples.
 
 ### 3. Run the System
 
@@ -122,9 +138,11 @@ Our research-backed scoring algorithm evaluates content across 6 critical dimens
 - **Configurable Timeframes**: Adjustable lookback periods
 
 ### 🤖 LLM Analysis
+- **Multiple Provider Support**: DeepSeek, OpenRouter, OpenAI compatibility
 - **Advanced Prompts**: Specialized prompts for comprehensive research analysis
 - **Structured Summaries**: Background, technical highlights, applications
 - **Multi-dimensional Scoring**: LLM-generated quality assessments
+- **Flexible Model Selection**: Choose optimal model for your region/needs
 - **Batch Processing**: Efficient API usage with rate limiting
 - **Fallback Handling**: Graceful degradation when API unavailable
 

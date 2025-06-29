@@ -198,8 +198,14 @@ class AICodeDigestRunner:
             # Only keep HTML for email body
             attachments = {k: v for k, v in attachments.items() if k == "html"}
         
+        # Get recipient from environment variable
+        recipient = os.getenv(email_config["recipient_env"])
+        if not recipient:
+            self.logger.error(f"Email recipient not found in environment variable: {email_config['recipient_env']}")
+            return False
+        
         return self.email_sender.send_daily_digest(
-            to_email=email_config["recipient"],
+            to_email=recipient,
             report_files=attachments,
             date_str=date_str,
             summary_stats=summary_stats

@@ -57,7 +57,11 @@ def test_email_config():
         </html>
         """
         
-        recipient = "873425118@qq.com"
+        # Use SMTP_USERNAME as recipient (same as email sender)
+        recipient = os.getenv('SMTP_USERNAME')
+        if not recipient:
+            print("❌ SMTP_USERNAME not set - cannot determine recipient")
+            return False
         
         success = sender.send_digest_email(
             to_email=recipient,

@@ -57,7 +57,7 @@ Edit `config.json` to customize:
 
 **📊 Output & Email Settings:**
 - **Multiple Formats**: JSON, Markdown, HTML, PDF
-- **Email Configuration**: SMTP settings and recipients
+- **Email Configuration**: SMTP settings (recipient auto-detected from SMTP_USERNAME)
 
 See `config.examples.md` for detailed configuration examples.
 

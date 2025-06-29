@@ -86,7 +86,7 @@
   },
   "email": {
     "enabled": true,
-    "recipient": "873425118@qq.com",
+    "recipient_env": "SMTP_USERNAME",
     "send_attachments": true,
     "smtp": {
       "host_env": "SMTP_HOST",

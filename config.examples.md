@@ -350,17 +350,19 @@ export OPENROUTER_API_KEY="your_openrouter_api_key_here"
 
 ## 📧 Email and Output Configurations
 
-### Example 1: Multiple Recipients
+### Example 1: Email Configuration (Auto-detects recipient from SMTP_USERNAME)
 
 ```json
 {
   "email": {
     "enabled": true,
-    "recipient": "team@company.com,researcher@university.edu",
+    "recipient_env": "SMTP_USERNAME",
     "send_attachments": true
   }
 }
 ```
+
+**Note**: The email recipient is automatically determined from your SMTP_USERNAME environment variable. This ensures the digest is sent to the same email address used for SMTP authentication.
 
 ### Example 2: Custom Output Formats
 
@@ -373,13 +375,13 @@ export OPENROUTER_API_KEY="your_openrouter_api_key_here"
 }
 ```
 
-### Example 3: Minimal Email (Link Only)
+### Example 3: Minimal Email (HTML only, no attachments)
 
 ```json
 {
   "email": {
     "enabled": true,
-    "recipient": "user@example.com",
+    "recipient_env": "SMTP_USERNAME",
     "send_attachments": false
   }
 }
@@ -429,7 +431,7 @@ Here's a complete configuration template you can customize:
   },
   "email": {
     "enabled": true,
-    "recipient": "your-email@example.com",
+    "recipient_env": "SMTP_USERNAME",
     "send_attachments": true
   }
 }

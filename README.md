@@ -59,6 +59,24 @@ Edit `config.json` to customize:
 - **Multiple Formats**: JSON, Markdown, HTML, PDF
 - **Email Configuration**: SMTP settings (recipient auto-detected from SMTP_USERNAME)
 
+**📋 Quick Configuration Example:**
+```json
+{
+  "data_collection": {
+    "keywords": ["code generation", "AI programming", "LLM coding"],
+    "arxiv": {"categories": ["cs.AI", "cs.SE", "cs.LG"]},
+    "github": {"topics": ["ai-coding", "code-generation"]}
+  },
+  "llm": {
+    "provider": "deepseek",  // or "openrouter", "openai"
+    "model": "deepseek-chat"
+  },
+  "email": {
+    "recipient_env": "SMTP_USERNAME"  // Auto-detects from SMTP settings
+  }
+}
+```
+
 See `config.examples.md` for detailed configuration examples.
 
 ### 3. Run the System
@@ -96,20 +114,21 @@ ai_code_digest/
 ├── collector/              # Data collection modules
 │   ├── arxiv_fetcher.py   # arXiv paper fetching
 │   ├── github_fetcher.py  # GitHub repository fetching
-│   ├── cleaner.py         # Data cleaning and deduplication
-│   └── keywords.json      # Search keywords configuration
-├── summarizer/            # LLM processing modules
-│   ├── gpt_summarizer.py  # OpenRouter LLM integration
+│   └── cleaner.py         # Data cleaning and deduplication
+├── summarizer/            # Analysis and summarization
+│   ├── gpt_summarizer.py  # Multi-provider LLM integration
+│   ├── scoring_system.py  # Comprehensive scoring algorithm
 │   ├── report_generator.py # Multi-format report generation
 │   └── prompt_templates/   # LLM prompt templates
 ├── senders/               # Delivery modules
 │   └── email_sender.py    # Email delivery system
 ├── outputs/               # Generated reports (created automatically)
 ├── logs/                  # Log files (created automatically)
+├── config.json            # Main system configuration
+├── config.examples.md     # Configuration examples
 ├── runner.py              # Main execution script
-├── config.json            # System configuration
 ├── requirements.txt       # Python dependencies
-└── README.md              # This file
+└── README.md              # This documentation
 ```
 
 ## ⚙️ Features
@@ -145,6 +164,13 @@ Our research-backed scoring algorithm evaluates content across 6 critical dimens
 - **Flexible Model Selection**: Choose optimal model for your region/needs
 - **Batch Processing**: Efficient API usage with rate limiting
 - **Fallback Handling**: Graceful degradation when API unavailable
+
+#### 🔄 LLM Provider Comparison
+| Provider | Best For | Models Available | API Endpoint |
+|----------|----------|------------------|--------------|
+| **DeepSeek** | Chinese users, cost-effective | `deepseek-chat`, `deepseek-coder` | `api.deepseek.com` |
+| **OpenRouter** | Multi-model access, flexibility | Claude, GPT-4, DeepSeek+ | `openrouter.ai` |
+| **OpenAI** | Direct GPT access, latest models | `gpt-4`, `gpt-3.5-turbo` | `api.openai.com` |
 
 ### Report Generation
 - **Multiple Formats**: JSON, Markdown, HTML, PDF
@@ -293,6 +319,9 @@ python send_reports.py              # Send existing reports only
 
 # Testing & Debugging
 python test_email.py                # Test email configuration
+python test_email_recipient.py      # Test email recipient configuration
+python test_config_system.py        # Test configuration system
+python demo_providers.py            # Demo LLM providers
 python debug_smtp.py               # Debug SMTP connection
 python runner.py --verbose         # Detailed logging
 

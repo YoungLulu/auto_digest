@@ -1,0 +1,20 @@
+# Core dependencies
+arxiv>=2.1.0
+PyGithub>=2.1.1
+requests>=2.31.0
+openai>=1.0.0
+python-dotenv>=1.0.0
+yagmail>=0.15.0
+
+# HTML/PDF generation
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+weasyprint>=60.0
+
+# Optional dependencies
+pandoc>=2.3.0  # For PDF generation (system package)
+
+# Development dependencies (optional)
+pytest>=7.0.0
+black>=23.0.0
+flake8>=6.0.0

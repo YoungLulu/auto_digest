@@ -28,6 +28,7 @@ Create a `.env` file or set the following environment variables:
 export DEEPSEEK_API_KEY="your-deepseek-api-key"
 export OPENROUTER_API_KEY="your-openrouter-api-key" 
 export OPENAI_API_KEY="your-openai-api-key"
+export GOOGLE_API_KEY="your-google-ai-api-key"
 
 # GitHub API (optional, for higher rate limits)
 export GITHUB_TOKEN="your-github-token"
@@ -68,8 +69,8 @@ Edit `config.json` to customize:
     "github": {"topics": ["ai-coding", "code-generation"]}
   },
   "llm": {
-    "provider": "deepseek",  // or "openrouter", "openai"
-    "model": "deepseek-chat"
+    "provider": "openrouter",  // Using OpenRouter for Gemini access
+    "model": "google/gemini-2.5-pro"  // Latest Google Gemini model
   },
   "email": {
     "recipient_env": "SMTP_USERNAME"  // Auto-detects from SMTP settings
@@ -168,8 +169,9 @@ Our research-backed scoring algorithm evaluates content across 6 critical dimens
 #### 🔄 LLM Provider Comparison
 | Provider | Best For | Models Available | API Endpoint |
 |----------|----------|------------------|--------------|
+| **Google AI** | Latest Gemini models, multimodal | `gemini-2.5-pro`, `gemini-1.5-pro` | `generativelanguage.googleapis.com` |
 | **DeepSeek** | Chinese users, cost-effective | `deepseek-chat`, `deepseek-coder` | `api.deepseek.com` |
-| **OpenRouter** | Multi-model access, flexibility | Claude, GPT-4, DeepSeek+ | `openrouter.ai` |
+| **OpenRouter** | Multi-model access, flexibility | Claude, GPT-4, Gemini+ | `openrouter.ai` |
 | **OpenAI** | Direct GPT access, latest models | `gpt-4`, `gpt-3.5-turbo` | `api.openai.com` |
 
 ### Report Generation

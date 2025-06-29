@@ -40,7 +40,25 @@ Environment variable:
 export OPENAI_API_KEY="your_openai_api_key_here"
 ```
 
-### Example 3: Using OpenRouter (Access to multiple models)
+### Example 3: Using OpenRouter with Google Gemini 2.5 Pro (Recommended)
+
+```json
+{
+  "llm": {
+    "provider": "openrouter",
+    "model": "google/gemini-2.5-pro",
+    "max_tokens": 1000,
+    "temperature": 0.3
+  }
+}
+```
+
+Environment variable:
+```bash
+export OPENROUTER_API_KEY="your_openrouter_api_key_here"
+```
+
+### Example 4: Using OpenRouter with Claude (Alternative)
 
 ```json
 {
@@ -51,11 +69,6 @@ export OPENAI_API_KEY="your_openai_api_key_here"
     "temperature": 0.3
   }
 }
-```
-
-Environment variable:
-```bash
-export OPENROUTER_API_KEY="your_openrouter_api_key_here"
 ```
 
 ## 🔍 Search Configuration Examples

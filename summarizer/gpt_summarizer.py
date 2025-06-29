@@ -47,11 +47,21 @@ class GPTSummarizer:
             return None
         
         try:
-            client = openai.OpenAI(
-                api_key=api_key,
-                base_url=base_url
-            )
-            return client
+            # Store provider and API key for later use
+            self.provider = provider
+            self.api_key = api_key
+            self.base_url = base_url
+            
+            if provider == "google":
+                # Google AI uses different API, don't initialize OpenAI client
+                return "google_ai"  # Special marker for Google AI
+            else:
+                # Use OpenAI-compatible client for other providers
+                client = openai.OpenAI(
+                    api_key=api_key,
+                    base_url=base_url
+                )
+                return client
         except Exception as e:
             print(f"Error initializing LLM client for provider '{provider}': {e}")
             return None
@@ -124,17 +134,21 @@ Respond with valid JSON only."""
         )
         
         try:
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": "You are an expert AI research analyst. Respond only with valid JSON."},
-                    {"role": "user", "content": prompt}
-                ],
-                max_tokens=800,
-                temperature=0.3
-            )
-            
-            content = response.choices[0].message.content.strip()
+            # Handle different providers
+            if self.client == "google_ai":
+                content = self._call_google_ai(prompt)
+            else:
+                # OpenAI-compatible API call
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=[
+                        {"role": "system", "content": "You are an expert AI research analyst. Respond only with valid JSON."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=800,
+                    temperature=0.3
+                )
+                content = response.choices[0].message.content.strip()
             
             # Clean and parse JSON
             content = self._clean_json_response(content)
@@ -178,6 +192,46 @@ Respond with valid JSON only."""
             content = content[start:end]
         
         return content
+    
+    def _call_google_ai(self, prompt: str) -> str:
+        """Call Google AI API with proper formatting"""
+        import requests
+        
+        # Google AI API endpoint
+        url = f"{self.base_url}/models/{self.model}:generateContent?key={self.api_key}"
+        
+        # Prepare Google AI request format
+        payload = {
+            "contents": [{
+                "parts": [{
+                    "text": f"You are an expert AI research analyst. Respond only with valid JSON.\n\n{prompt}"
+                }]
+            }],
+            "generationConfig": {
+                "temperature": 0.3,
+                "maxOutputTokens": 800,
+                "candidateCount": 1
+            }
+        }
+        
+        headers = {
+            "Content-Type": "application/json"
+        }
+        
+        response = requests.post(url, json=payload, headers=headers)
+        response.raise_for_status()
+        
+        result = response.json()
+        
+        # Extract content from Google AI response
+        if "candidates" in result and len(result["candidates"]) > 0:
+            candidate = result["candidates"][0]
+            if "content" in candidate and "parts" in candidate["content"]:
+                parts = candidate["content"]["parts"]
+                if len(parts) > 0 and "text" in parts[0]:
+                    return parts[0]["text"].strip()
+        
+        raise Exception("No valid response from Google AI API")
     
     def _generate_mock_summaries(self, items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         mock_summaries = []

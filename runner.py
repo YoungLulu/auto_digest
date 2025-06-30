@@ -48,7 +48,8 @@ class AICodeDigestRunner:
         self.data_cleaner = DataCleaner()
         self.summarizer = GPTSummarizer(config=self.config)
         self.report_generator = ReportGenerator(
-            output_dir=self.config["output"]["output_dir"]
+            output_dir=self.config["output"]["output_dir"],
+            config=self.config
         )
         self.email_sender = EmailSender()
         

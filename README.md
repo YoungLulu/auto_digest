@@ -7,9 +7,6 @@ An intelligent system that automatically collects, analyzes, and summarizes the 
 ### 1. Installation
 
 ```bash
-# Clone or navigate to the project directory
-cd ai_code_digest
-
 # Install Python dependencies
 pip install -r requirements.txt
 
@@ -20,301 +17,140 @@ sudo apt-get install pandoc texlive-xelatex
 # macOS:
 brew install pandoc cairo pango gdk-pixbuf libffi
 
-# Windows (using chocolatey):
+# Windows:
 choco install pandoc miktex
 ```
 
 ### 2. Configuration
 
-#### Environment Variables
-
-Create a `.env` file or set the following environment variables:
-
+#### Environment Variables (.env file)
 ```bash
 # LLM API Keys (choose your provider)
-export DEEPSEEK_API_KEY="your-deepseek-api-key"
-export OPENROUTER_API_KEY="your-openrouter-api-key" 
-export OPENAI_API_KEY="your-openai-api-key"
-export GOOGLE_API_KEY="your-google-ai-api-key"
+OPENROUTER_API_KEY="your-openrouter-api-key"
+DEEPSEEK_API_KEY="your-deepseek-api-key" 
+OPENAI_API_KEY="your-openai-api-key"
+GOOGLE_API_KEY="your-google-ai-api-key"
 
-# GitHub API (optional, for higher rate limits)
-export GITHUB_TOKEN="your-github-token"
+# GitHub API (optional, higher rate limits)
+GITHUB_TOKEN="your-github-token"
 
-# Email Configuration (required for email delivery)
-export SMTP_HOST="smtp.gmail.com"
-export SMTP_PORT="587"
-export SMTP_USERNAME="your-email@gmail.com"
-export SMTP_PASSWORD="your-app-password"
-export SMTP_USE_TLS="true"
+# Email Configuration
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_USERNAME="your-email@gmail.com"
+SMTP_PASSWORD="your-app-password"
+SMTP_USE_TLS="true"
 ```
 
-#### Configuration File
-
-Edit `config.json` to customize:
-
-**🔍 Search Configuration:**
-- **Keywords**: Custom search terms for research topics
-- **arXiv Categories**: Target academic categories (cs.AI, cs.SE, etc.)
-- **GitHub Topics**: Repository topics to search
-- **Collection Parameters**: Days back, max results, minimum stars
-
-**🤖 LLM Provider Configuration:**
-- **Multiple Providers**: DeepSeek, OpenRouter, OpenAI support
-- **Provider-specific Settings**: Custom API endpoints and models
-- **Flexible Model Selection**: Choose optimal model for your use case
-
-**📊 Output & Email Settings:**
-- **Multiple Formats**: JSON, Markdown, HTML, PDF
-- **Email Configuration**: SMTP settings (recipient auto-detected from SMTP_USERNAME)
-
-**📋 Quick Configuration Example:**
+#### Key Configuration (config.json)
 ```json
 {
   "data_collection": {
-    "keywords": ["code generation", "AI programming", "LLM coding"],
-    "arxiv": {"categories": ["cs.AI", "cs.SE", "cs.LG"]},
-    "github": {"topics": ["ai-coding", "code-generation"]}
+    "keywords": ["code generation", "LLM coding", "AI programming"],
+    "arxiv": {"max_results": 50, "days_back": 10},
+    "github": {"max_per_query": 10, "min_stars": 100}
   },
   "llm": {
-    "provider": "openrouter",  // Using OpenRouter for Gemini access
-    "model": "google/gemini-2.5-pro"  // Latest Google Gemini model
+    "provider": "openrouter",
+    "model": "anthropic/claude-3-sonnet-20240229"
   },
-  "email": {
-    "recipient_env": "SMTP_USERNAME"  // Auto-detects from SMTP settings
+  "output": {
+    "max_items_per_category": 20,
+    "max_total_items": 100
   }
 }
 ```
 
-See `config.examples.md` for detailed configuration examples.
-
 ### 3. Run the System
 
 ```bash
-# Activate virtual environment first
-# Linux/macOS:
+# Setup environment
 source venv/bin/activate && source .env
 
-# Windows (PowerShell):
-venv\Scripts\Activate.ps1
-# Set environment variables or use .env file
-
-# Run for today's digest (full generation + email)
+# Generate today's digest
 python runner.py
 
-# Test run without sending email
+# Test without sending email
 python runner.py --dry-run
 
-# Run for a specific date
-python runner.py --date 2024-01-15
-
-# Verbose output for debugging
+# Debug mode
 python runner.py --verbose
-
-# Send existing reports without regenerating
-python send_reports.py
-
-# Test email configuration
-python test_email.py
-
-# Debug SMTP connection
-python debug_smtp.py
-```
-
-## 📁 Project Structure
-
-```
-ai_code_digest/
-├── collector/              # Data collection modules
-│   ├── arxiv_fetcher.py   # arXiv paper fetching
-│   ├── github_fetcher.py  # GitHub repository fetching
-│   └── cleaner.py         # Data cleaning and deduplication
-├── summarizer/            # Analysis and summarization
-│   ├── gpt_summarizer.py  # Multi-provider LLM integration
-│   ├── scoring_system.py  # Comprehensive scoring algorithm
-│   ├── report_generator.py # Multi-format report generation
-│   └── prompt_templates/   # LLM prompt templates
-├── senders/               # Delivery modules
-│   └── email_sender.py    # Email delivery system
-├── outputs/               # Generated reports (created automatically)
-├── logs/                  # Log files (created automatically)
-├── config.json            # Main system configuration
-├── config.examples.md     # Configuration examples
-├── runner.py              # Main execution script
-├── requirements.txt       # Python dependencies
-└── README.md              # This documentation
 ```
 
 ## ⚙️ Features
 
-### 🏆 Advanced Comprehensive Scoring System
-Our research-backed scoring algorithm evaluates content across 6 critical dimensions:
+### 🏆 Two-Stage Quality Ranking System
 
-- **Popularity (25%)**: GitHub stars or arXiv citation potential
-- **Technical Innovation (20%)**: Novelty and creativity of technical approaches  
-- **Application Value (10%)**: Real-world practical applications
-- **Readability (15%)**: Content clarity and accessibility
-- **Experimental Thoroughness (15%)**: Comprehensiveness of evaluation
-- **Author Influence (15%)**: Reputation of authors/organizations
+**Stage 1: Data Collection Sorting**
+- arXiv: Latest 50 papers by submission date
+- GitHub: Top repositories by stars/activity
 
-### 📊 Rich Content Analysis
-- **Author Information**: Comprehensive author details and organizational affiliations
-- **Technical Highlights**: Key innovations and standout technical features
-- **Background Context**: Problem space and research gaps addressed
-- **Application Scenarios**: Practical use cases and real-world implications
-- **Intelligent Classification**: AI-powered category tagging system
+**Stage 2: Comprehensive Scoring & Re-ranking**
+- **Popularity (25%)**: GitHub stars, arXiv citations
+- **Technical Innovation (20%)**: LLM-assessed novelty
+- **Application Value (10%)**: Practical utility
+- **Readability (15%)**: Content clarity
+- **Experimental Thoroughness (15%)**: Evaluation rigor
+- **Author Influence (15%)**: Institutional reputation
 
-### 🎯 Data Collection
-- **arXiv**: Fetches papers from CS.AI, CS.SE, CS.LG categories
-- **GitHub**: Searches repositories by topics and keywords
-- **Smart Filtering**: Relevance-based filtering and deduplication
-- **Configurable Timeframes**: Adjustable lookback periods
+Final output shows highest-quality research, not just newest.
 
-### 🤖 LLM Analysis
-- **Multiple Provider Support**: DeepSeek, OpenRouter, OpenAI compatibility
-- **Advanced Prompts**: Specialized prompts for comprehensive research analysis
-- **Structured Summaries**: Background, technical highlights, applications
-- **Multi-dimensional Scoring**: LLM-generated quality assessments
-- **Flexible Model Selection**: Choose optimal model for your region/needs
-- **Batch Processing**: Efficient API usage with rate limiting
-- **Fallback Handling**: Graceful degradation when API unavailable
+### 🎯 Data Sources
+- **arXiv**: CS.AI, CS.SE, CS.LG, CS.PL categories
+- **GitHub**: Configurable topics and keywords
+- **Smart Filtering**: Relevance-based deduplication
 
-#### 🔄 LLM Provider Comparison
-| Provider | Best For | Models Available | API Endpoint |
-|----------|----------|------------------|--------------|
-| **Google AI** | Latest Gemini models, multimodal | `gemini-2.5-pro`, `gemini-1.5-pro` | `generativelanguage.googleapis.com` |
-| **DeepSeek** | Chinese users, cost-effective | `deepseek-chat`, `deepseek-coder` | `api.deepseek.com` |
-| **OpenRouter** | Multi-model access, flexibility | Claude, GPT-4, Gemini+ | `openrouter.ai` |
-| **OpenAI** | Direct GPT access, latest models | `gpt-4`, `gpt-3.5-turbo` | `api.openai.com` |
+### 🤖 Multi-Provider LLM Support
+| Provider | Best For | Models |
+|----------|----------|--------|
+| **Google AI** | Latest models, cost-effective | gemini-2.5-pro, gemini-1.5-pro |
+| **OpenRouter** | Multi-model access | Claude, GPT-4, Gemini |
+| **DeepSeek** | Very cost-effective | deepseek-chat, deepseek-coder |
+| **OpenAI** | Direct GPT access | gpt-4, gpt-3.5-turbo |
 
-### Report Generation
-- **Multiple Formats**: JSON, Markdown, HTML, PDF
-- **Categorized Content**: Organized by research areas
-- **Rich Formatting**: Professional styling and navigation
-- **Attachment Support**: Email with multiple report formats
-
-### Email Delivery
-- **HTML Content**: Rich formatted email body
-- **Multiple Attachments**: PDF, JSON, Markdown files
-- **SMTP Flexibility**: Works with Gmail, Outlook, custom servers
-- **Error Handling**: Robust delivery with fallback options
-
-## 🛠️ Advanced Configuration
-
-### Custom Keywords
-
-Edit `collector/keywords.json` to add your research interests:
-
-```json
-{
-  "keywords": [
-    "your custom keyword",
-    "another research area"
-  ],
-  "github_topics": [
-    "your-topic"
-  ]
-}
-```
-
-### LLM Customization
-
-Modify `summarizer/prompt_templates/classify_summarize.txt` to adjust:
-- Analysis criteria
-- Output format
-- Classification categories
-- Relevance scoring
-
-### Scheduled Execution
-
-Set up daily execution with cron:
-
+**Easy Provider Switching:**
 ```bash
-# Edit crontab
-crontab -e
-
-# Add daily execution at 8 AM
-0 8 * * * cd /path/to/ai_code_digest && /usr/bin/python3 runner.py
+python provider_manager.py google    # Switch to Google AI
+python provider_manager.py           # Interactive selection
 ```
+*See `provider_examples.md` for detailed configuration guides.*
 
-## 🔧 Troubleshooting
-
-### Common Issues
-
-1. **No Papers Found**
-   - Check internet connection
-   - Verify keywords in `collector/keywords.json`
-   - Increase `days_back` in config.json
-
-2. **LLM Errors**
-   - Verify `OPENROUTER_API_KEY` is set correctly
-   - Check API quota and rate limits
-   - Try different model in config.json (e.g., "anthropic/claude-3-sonnet-20240229", "openai/gpt-4")
-
-3. **Email Delivery Failed**
-   - Verify SMTP credentials
-   - Enable "App Passwords" for Gmail
-   - Check firewall/network restrictions
-
-4. **PDF Generation Failed**
-   - **Ubuntu/Debian**: `sudo apt-get install pandoc texlive-xelatex`
-   - **macOS**: `brew install pandoc cairo pango gdk-pixbuf libffi`
-   - **Windows**: `choco install pandoc miktex`
-   - Alternative: Install weasyprint: `pip install weasyprint`
-
-### Debug Mode
-
-Run with verbose logging to diagnose issues:
-
-```bash
-python runner.py --verbose --dry-run
-```
-
-### Log Files
-
-Check `logs/ai_code_digest.log` for detailed execution logs.
+### 📊 Output Formats
+- **JSON**: Machine-readable with scores
+- **Markdown**: Human-readable analysis
+- **HTML**: Rich web format
+- **PDF**: Print-ready reports
+- **Email**: Automated delivery with attachments
 
 ## 🖥️ System Compatibility
 
-### Supported Operating Systems
-- ✅ **Linux** (Ubuntu, Debian, CentOS, etc.) - Fully tested
-- ✅ **macOS** (10.14+) - Fully compatible 
-- ✅ **Windows** (10/11) - Compatible with minor setup differences
+### Supported Platforms
+- ✅ **Linux** (Ubuntu, Debian, CentOS) - Fully tested
+- ✅ **macOS** (10.14+) - Fully compatible
+- ✅ **Windows** (10/11) - Compatible
 
 ### Platform-Specific Setup
 
-#### 🐧 Linux (Ubuntu/Debian)
+#### Linux (Ubuntu/Debian)
 ```bash
-# System dependencies
-sudo apt-get update
-sudo apt-get install python3 python3-pip python3-venv
-sudo apt-get install pandoc texlive-xelatex  # For PDF generation
-
-# Python environment
-python3 -m venv venv
-source venv/bin/activate
+sudo apt-get install python3 python3-pip python3-venv pandoc texlive-xelatex
+python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-#### 🍎 macOS 
+#### macOS
 ```bash
-# Install Homebrew (if not already installed)
+# Install Homebrew if needed
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# System dependencies
 brew install python3 pandoc cairo pango gdk-pixbuf libffi
-
-# Python environment
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-#### 🪟 Windows
+#### Windows
 ```powershell
-# Install Python from python.org or Microsoft Store
-# Install Chocolatey package manager (optional)
-
-# System dependencies (with Chocolatey)
+# Install dependencies
 choco install pandoc miktex
 
 # Python environment
@@ -323,21 +159,64 @@ venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
-### Notes on Cross-Platform Compatibility
-- **Python Code**: 100% compatible across all platforms
-- **Path Handling**: Uses `pathlib.Path` for cross-platform compatibility
-- **Environment Variables**: Supported on all platforms via `.env` files
-- **Virtual Environments**: Standard Python venv works everywhere
-- **PDF Generation**: Platform-specific dependency installation required
+## 📁 Project Structure
 
-## 📊 Output Examples
+```
+ai_code_digest/
+├── collector/              # Data collection
+│   ├── arxiv_fetcher.py   # arXiv papers
+│   ├── github_fetcher.py  # GitHub repos
+│   └── cleaner.py         # Deduplication
+├── summarizer/            # Analysis engine
+│   ├── gpt_summarizer.py  # Multi-provider LLM
+│   ├── scoring_system.py  # Quality scoring
+│   ├── report_generator.py # Report generation
+│   └── prompt_templates/   # LLM prompts
+├── senders/               # Delivery
+│   └── email_sender.py    # Email system
+├── outputs/               # Generated reports
+├── config.json            # Main configuration
+└── runner.py              # Main script
+```
 
-### 🏆 Comprehensive Scoring Example
+## 🔧 Troubleshooting
+
+### Common Issues
+
+1. **No Data Found**
+   - Check internet connection
+   - Verify API keys in `.env`
+   - Increase `days_back` in config.json
+
+2. **LLM Errors**
+   - Verify API key: `OPENROUTER_API_KEY`
+   - Check model availability
+   - Try different provider in config
+
+3. **Email Delivery Failed**
+   - Enable "App Passwords" for Gmail
+   - Check SMTP credentials
+   - Verify network/firewall settings
+
+4. **PDF Generation Failed**
+   - **Linux**: `sudo apt-get install pandoc texlive-xelatex`
+   - **macOS**: `brew install pandoc cairo pango gdk-pixbuf libffi`
+   - **Windows**: `choco install pandoc miktex`
+
+### Debug Commands
+```bash
+python runner.py --verbose --dry-run    # Debug without email
+python test_email.py                    # Test email config
+tail -f logs/ai_code_digest.log         # Monitor logs
+```
+
+## 📊 Sample Output
+
+### Comprehensive Scoring Example
 ```
 ### SWE-Agent: Agent-Computer Interfaces Enable Automated Software Engineering
 
 **🔗 Link**: [https://arxiv.org/abs/2405.15793](https://arxiv.org/abs/2405.15793)
-
 **👥 Authors**: John Yang, Carlos E. Jimenez, Alexander Wettig (+4 more)
 
 **🏆 Overall Score**: 7.67/10
@@ -349,84 +228,55 @@ pip install -r requirements.txt
 - Novel agent-computer interface design for code editing
 - End-to-end training pipeline for software engineering tasks
 - State-of-the-art performance on SWE-bench benchmark
-- Innovative file browsing and editing commands for agents
 ```
 
-### 📧 Email Subject
-```
-🧠 AI Coding Digest - 2024-01-15
-```
-
-### 📑 Report Categories
-- Code Generation
-- Code Evaluation  
-- Program Synthesis
-- Coding Agents
-- LLM for Coding
-- Automated Testing
-- Software Reasoning
-
-### 📁 File Outputs
-- `daily_2024-01-15.json` - Machine-readable data with scores
-- `daily_2024-01-15.md` - Markdown report with full analysis
-- `daily_2024-01-15.html` - Web-viewable report with rich formatting
-- `daily_2024-01-15.pdf` - Print-ready report
-
-## 🔒 Security Notes
-
-- Store API keys in environment variables, not in code
-- Use app-specific passwords for email accounts
-- Regularly rotate API tokens
-- Review output before sharing to avoid sensitive information
-
-## 🚀 Ready Commands (Quick Reference)
+## 🚀 Quick Commands Reference
 
 ```bash
-# Setup (first time only)
-# Linux/macOS:
-source venv/bin/activate && source .env
-# Windows:
-venv\Scripts\Activate.ps1
-
 # Daily Operations
-python runner.py                    # Full digest generation + email
-python runner.py --dry-run          # Test without sending email  
-python send_reports.py              # Send existing reports only
+python runner.py                    # Generate & send digest
+python runner.py --dry-run          # Test without email
+python runner.py --date 2024-01-15  # Specific date
 
-# Testing & Debugging
-python test_email.py                # Test email configuration
-python test_email_recipient.py      # Test email recipient configuration
-python test_config_system.py        # Test configuration system
-python demo_providers.py            # Demo LLM providers
-python debug_smtp.py               # Debug SMTP connection
+# Provider Management
+python provider_manager.py          # Interactive provider selection
+python provider_manager.py list     # List all available providers
+python provider_manager.py google   # Switch to Google AI
+python test_all_providers.py        # Test all provider compatibility
+
+# Testing & Debug
+python test_email.py                # Test email setup
 python runner.py --verbose         # Detailed logging
+python debug_smtp.py               # SMTP debugging
 
-# Scheduling
-crontab -e                          # Edit cron jobs
-# Add: 0 8 * * * /path/to/run_digest.sh
-
-# Logs & Output
-tail -f logs/ai_code_digest.log     # Monitor logs
-ls outputs/                         # View generated reports
+# Monitoring
+tail -f logs/ai_code_digest.log     # Real-time logs
+ls outputs/                         # View reports
 ```
+
+## 🔒 Security & Best Practices
+
+- Store API keys in `.env` file, never in code
+- Use app-specific passwords for email accounts
+- Regularly rotate API tokens
+- Review outputs before sharing
 
 ## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+3. Add tests if applicable
+4. Submit a pull request
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+MIT License - see LICENSE file for details.
 
 ## 🙋‍♂️ Support
 
 For issues and questions:
-1. Check the troubleshooting section above
-2. Review log files for error details
+1. Check troubleshooting section
+2. Review log files
 3. Create an issue in the repository
 4. Contact: yangwanlu@codeck.ai
 

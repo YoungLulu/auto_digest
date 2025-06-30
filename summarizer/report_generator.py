@@ -7,9 +7,14 @@ import subprocess
 
 
 class ReportGenerator:
-    def __init__(self, output_dir: str = "outputs"):
+    def __init__(self, output_dir: str = "outputs", config: dict = None):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
+        self.config = config or {}
+        # Get output configuration
+        output_config = self.config.get("output", {})
+        self.max_items_per_category = output_config.get("max_items_per_category", 20)
+        self.max_total_items = output_config.get("max_total_items", 100)
     
     def generate_reports(self, summaries: List[Dict[str, Any]], date_str: str = None) -> Dict[str, str]:
         if date_str is None:
@@ -140,8 +145,10 @@ class ReportGenerator:
                     ""
                 ])
                 
-                # Sort items by comprehensive score (highest first)
-                for item in sorted(category_items, key=lambda x: x.get("final_score", x.get("relevance_score", 0)), reverse=True):
+                # Sort items by comprehensive score (highest first) and apply category limit
+                sorted_items = sorted(category_items, key=lambda x: x.get("final_score", x.get("relevance_score", 0)), reverse=True)
+                limited_items = sorted_items[:self.max_items_per_category]
+                for item in limited_items:
                     md_lines.extend(self._format_item_markdown(item))
                 
                 md_lines.extend([""])
@@ -293,8 +300,10 @@ class ReportGenerator:
                 content_html += f'<h3 id="{source_name}-{category}">{category_name}</h3>'
                 content_html += f'<p><em>{len(category_items)} items</em></p>'
                 
-                # Sort items by comprehensive score (highest first)
-                for item in sorted(category_items, key=lambda x: x.get("final_score", x.get("relevance_score", 0)), reverse=True):
+                # Sort items by comprehensive score (highest first) and apply category limit
+                sorted_items = sorted(category_items, key=lambda x: x.get("final_score", x.get("relevance_score", 0)), reverse=True)
+                limited_items = sorted_items[:self.max_items_per_category]
+                for item in limited_items:
                     content_html += self._format_item_html(item)
             
             content_html += "<hr>"

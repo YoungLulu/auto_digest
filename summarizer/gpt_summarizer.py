@@ -191,6 +191,21 @@ Respond with valid JSON only."""
         if start != -1 and end > start:
             content = content[start:end]
         
+        # Fix common JSON issues
+        # Fix unterminated strings by adding closing quotes before }
+        lines = content.split('\n')
+        fixed_lines = []
+        for line in lines:
+            # If line ends with just a quote followed by optional whitespace
+            if re.search(r':\s*"[^"]*$', line.strip()) and not line.strip().endswith('",'):
+                line = line.rstrip() + '",'
+            fixed_lines.append(line)
+        
+        content = '\n'.join(fixed_lines)
+        
+        # Remove trailing comma before closing brace
+        content = re.sub(r',(\s*})$', r'\1', content)
+        
         return content
     
     def _call_google_ai(self, prompt: str) -> str:

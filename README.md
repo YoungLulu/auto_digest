@@ -13,8 +13,15 @@ cd ai_code_digest
 # Install Python dependencies
 pip install -r requirements.txt
 
-# Optional: Install pandoc for PDF generation (Ubuntu/Debian)
+# Install system dependencies for PDF generation
+# Ubuntu/Debian:
 sudo apt-get install pandoc texlive-xelatex
+
+# macOS:
+brew install pandoc cairo pango gdk-pixbuf libffi
+
+# Windows (using chocolatey):
+choco install pandoc miktex
 ```
 
 ### 2. Configuration
@@ -84,7 +91,12 @@ See `config.examples.md` for detailed configuration examples.
 
 ```bash
 # Activate virtual environment first
+# Linux/macOS:
 source venv/bin/activate && source .env
+
+# Windows (PowerShell):
+venv\Scripts\Activate.ps1
+# Set environment variables or use .env file
 
 # Run for today's digest (full generation + email)
 python runner.py
@@ -244,8 +256,10 @@ crontab -e
    - Check firewall/network restrictions
 
 4. **PDF Generation Failed**
-   - Install pandoc: `sudo apt-get install pandoc texlive-xelatex`
-   - Or install weasyprint: `pip install weasyprint`
+   - **Ubuntu/Debian**: `sudo apt-get install pandoc texlive-xelatex`
+   - **macOS**: `brew install pandoc cairo pango gdk-pixbuf libffi`
+   - **Windows**: `choco install pandoc miktex`
+   - Alternative: Install weasyprint: `pip install weasyprint`
 
 ### Debug Mode
 
@@ -258,6 +272,63 @@ python runner.py --verbose --dry-run
 ### Log Files
 
 Check `logs/ai_code_digest.log` for detailed execution logs.
+
+## 🖥️ System Compatibility
+
+### Supported Operating Systems
+- ✅ **Linux** (Ubuntu, Debian, CentOS, etc.) - Fully tested
+- ✅ **macOS** (10.14+) - Fully compatible 
+- ✅ **Windows** (10/11) - Compatible with minor setup differences
+
+### Platform-Specific Setup
+
+#### 🐧 Linux (Ubuntu/Debian)
+```bash
+# System dependencies
+sudo apt-get update
+sudo apt-get install python3 python3-pip python3-venv
+sudo apt-get install pandoc texlive-xelatex  # For PDF generation
+
+# Python environment
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+#### 🍎 macOS 
+```bash
+# Install Homebrew (if not already installed)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# System dependencies
+brew install python3 pandoc cairo pango gdk-pixbuf libffi
+
+# Python environment
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+#### 🪟 Windows
+```powershell
+# Install Python from python.org or Microsoft Store
+# Install Chocolatey package manager (optional)
+
+# System dependencies (with Chocolatey)
+choco install pandoc miktex
+
+# Python environment
+python -m venv venv
+venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+### Notes on Cross-Platform Compatibility
+- **Python Code**: 100% compatible across all platforms
+- **Path Handling**: Uses `pathlib.Path` for cross-platform compatibility
+- **Environment Variables**: Supported on all platforms via `.env` files
+- **Virtual Environments**: Standard Python venv works everywhere
+- **PDF Generation**: Platform-specific dependency installation required
 
 ## 📊 Output Examples
 
@@ -312,7 +383,10 @@ Check `logs/ai_code_digest.log` for detailed execution logs.
 
 ```bash
 # Setup (first time only)
+# Linux/macOS:
 source venv/bin/activate && source .env
+# Windows:
+venv\Scripts\Activate.ps1
 
 # Daily Operations
 python runner.py                    # Full digest generation + email

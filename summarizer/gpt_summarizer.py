@@ -224,7 +224,7 @@ Respond with valid JSON only."""
             }],
             "generationConfig": {
                 "temperature": 0.3,
-                "maxOutputTokens": 800,
+                "maxOutputTokens": 2048,
                 "candidateCount": 1
             }
         }
@@ -241,10 +241,22 @@ Respond with valid JSON only."""
         # Extract content from Google AI response
         if "candidates" in result and len(result["candidates"]) > 0:
             candidate = result["candidates"][0]
-            if "content" in candidate and "parts" in candidate["content"]:
-                parts = candidate["content"]["parts"]
-                if len(parts) > 0 and "text" in parts[0]:
-                    return parts[0]["text"].strip()
+            
+            # Check finish reason first
+            finish_reason = candidate.get("finishReason", "")
+            if finish_reason == "MAX_TOKENS":
+                print("Warning: Response truncated due to max tokens limit")
+            
+            if "content" in candidate:
+                content = candidate["content"]
+                if "parts" in content and len(content["parts"]) > 0:
+                    parts = content["parts"]
+                    if len(parts) > 0 and "text" in parts[0]:
+                        return parts[0]["text"].strip()
+                
+                # Alternative: check if content has direct text
+                if "text" in content:
+                    return content["text"].strip()
         
         raise Exception("No valid response from Google AI API")
     

@@ -278,7 +278,6 @@ For issues and questions:
 1. Check troubleshooting section
 2. Review log files
 3. Create an issue in the repository
-4. Contact: yangwanlu@codeck.ai
 
 ---
 
